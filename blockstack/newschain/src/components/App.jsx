@@ -1,6 +1,10 @@
 import React, { Component, Link } from 'react';
 import Profile from './Profile.jsx';
+import AllBlogs from './AllBlogs.jsx'
+import NewBlog from './NewBlog.jsx';
 import Signin from './Signin.jsx';
+import UserInfo from './UserInfo.jsx';
+
 import { Switch, Route } from 'react-router-dom'
 import {
   isSignInPending,
@@ -13,7 +17,10 @@ import {
 export default class App extends Component {
 
   constructor(props) {
-  	super(props);
+    super(props);
+    this.state = {newBlogClicked:false};
+    console.log('state in constructotr', this.state );
+
   }
 
   handleSignIn(e) {
@@ -23,6 +30,7 @@ export default class App extends Component {
   }
 
   handleSignOut(e) {
+    //console.log('path',path)
     e.preventDefault();
     signUserOut(window.location.origin);
   }
@@ -38,7 +46,24 @@ export default class App extends Component {
               <Route
                 path='/:username?'
                 render={
-                  routeProps => <Profile handleSignOut={ this.handleSignOut } {...routeProps} />
+                  routeProps => (
+                    <div>
+                      {this.state.newBlogClicked?
+                        <a href="#" onClick={()=>this.setState({ newBlogClicked : false} )}>
+                          Return
+                        </a>
+                        :
+                        <a href="#" onClick={()=>this.setState({ newBlogClicked : true} )}>
+                            Create New Blog
+                        </a>
+                      }
+                      <UserInfo handleSignOut={ this.handleSignOut } {...routeProps} />
+                      {this.state.newBlogClicked? 
+                        <NewBlog  {...routeProps} /> :
+                        <AllBlogs {...routeProps} />  
+                      }
+                    </div>
+                  )
                 }
               />
             </Switch>
@@ -48,6 +73,16 @@ export default class App extends Component {
     );
   }
 
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    console.log('updateddd', prevState, 'snapsot', snapshot ,'  prevProps',prevProps);
+    
+  }
+
+  createNewBlog() {
+    console.log("creating new blog");
+    this.setState({ newBlogClicked : true} );
+  }
+  
   componentWillMount() {
     if (isSignInPending()) {
       handlePendingSignIn().then((userData) => {

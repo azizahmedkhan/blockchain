@@ -9,23 +9,12 @@ import {
 } from 'blockstack';
 import UserInfo from './UserInfo.jsx';
 
-
-const avatarFallbackImage = 'https://s3.amazonaws.com/onename/avatar-placeholder.png';
-
-export default class Profile extends Component {
+export default class NewBlog extends Component {
   constructor(props) {
     super(props);
- 
+    console.log('New Blogg')
     this.state = {
-      person: {
-        name() {
-          return 'Anonymous';
-        },
-        avatarUrl() {
-          return avatarFallbackImage;
-        },
-      },
-      username: "",
+      
       newStatus: "",
       statuses: [],
       statusIndex: 0,
@@ -40,21 +29,24 @@ export default class Profile extends Component {
    
     return (
       !isSignInPending() && person ?
-
-
+      
       <div className="container">
-      <UserInfo {...this.props} />
         <div className="row">
-          <div className="col-md-offset-3 col-md-6">            
+          <div className="col-md-offset-3 col-md-6">  
             {this.isLocal() &&
-              <div className="new-status">
+              <div className="new-blog">
                 <div className="col-md-12">
                   <textarea className="input-title"
                     value={this.state.newStatus}
                     onChange={e => this.handleNewStatusChange(e)}
-                    placeholder="title__p?"
+                    placeholder="title?"
                   />
-                </div>
+                  {<textarea className="input-blog"
+                    value={this.state.newStatus}
+                    onChange={e => this.handleNewStatusChange(e)}
+                    placeholder="What's on your mind?"
+                  />}
+            </div>
                 <div className="col-md-12 text-right">
                   <button
                     className="btn btn-primary btn-lg"
@@ -80,14 +72,9 @@ export default class Profile extends Component {
     );
     }
 
-  componentWillMount() {
-    this.setState({
-      person: new Person(loadUserData().profile),
-      username: loadUserData().username
-    });
-  }
-
+    
   componentDidMount() {
+    console.log('componentDidMount')
     this.fetchData()
   }
 
@@ -113,7 +100,9 @@ export default class Profile extends Component {
     }
  
     statuses.unshift(status)
-    const options = { encrypt: false }
+    console.log('saveNewStatus')
+    const options = { encrypt: false ,username:'azizahmed.id.blockstack'}
+    //putFile()
     putFile('statuses.json', JSON.stringify(statuses), options)
       .then(() => {
         this.setState({
@@ -129,7 +118,7 @@ export default class Profile extends Component {
   fetchData() {
     this.setState({ isLoading: true })
     if (this.isLocal()) {
-      const options = { decrypt: false }
+      const options = { decrypt: false, username:'azizahmed.id.blockstack'}
       getFile('statuses.json', options)
         .then((file) => {
           var statuses = JSON.parse(file || '[]')

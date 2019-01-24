@@ -4,29 +4,23 @@ import {
   loadUserData,
   Person,
   getFile,
-  putFile,
   lookupProfile,
 } from 'blockstack';
 import UserInfo from './UserInfo.jsx';
 
 
-const avatarFallbackImage = 'https://s3.amazonaws.com/onename/avatar-placeholder.png';
-
-export default class Profile extends Component {
+export default class AllBlogs extends Component {
   constructor(props) {
     super(props);
- 
+    console.log('All Bloggs')
+
     this.state = {
       person: {
         name() {
           return 'Anonymous';
         },
-        avatarUrl() {
-          return avatarFallbackImage;
-        },
       },
       username: "",
-      newStatus: "",
       statuses: [],
       statusIndex: 0,
       isLoading: false
@@ -34,38 +28,15 @@ export default class Profile extends Component {
   }
 
   render() {
-    const { handleSignOut } = this.props;
-    const { person } = this.state;
-    const { username } = this.state;
-   
+    const { person } = this.state;   
     return (
       !isSignInPending() && person ?
-
-
       <div className="container">
-      <UserInfo {...this.props} />
+      
         <div className="row">
-          <div className="col-md-offset-3 col-md-6">            
-            {this.isLocal() &&
-              <div className="new-status">
-                <div className="col-md-12">
-                  <textarea className="input-title"
-                    value={this.state.newStatus}
-                    onChange={e => this.handleNewStatusChange(e)}
-                    placeholder="title__p?"
-                  />
-                </div>
-                <div className="col-md-12 text-right">
-                  <button
-                    className="btn btn-primary btn-lg"
-                    onClick={e => this.handleNewStatusSubmit(e)}
-                  >
-                    Submit
-                  </button>
-                </div>
-              </div>
-            }
-            {/** <div className="col-md-12 statuses">
+        
+          <div className="col-md-offset-3 col-md-6" id="">            
+            <div className="col-md-12 statuses">
             {this.state.isLoading && <span>Loading...</span>}
             {this.state.statuses.map((status) => (
                 <div className="status" key={status.id}>
@@ -73,59 +44,20 @@ export default class Profile extends Component {
                 </div>
                 )
             )}
-            </div>*/}
+            </div>
           </div>
         </div>
       </div> : null
     );
     }
 
-  componentWillMount() {
-    this.setState({
-      person: new Person(loadUserData().profile),
-      username: loadUserData().username
-    });
-  }
-
   componentDidMount() {
     this.fetchData()
   }
 
-  handleNewStatusChange(event) {
-    console.log('handleNewStatusChange')
-    this.setState({newStatus: event.target.value})
-  }
- 
-  handleNewStatusSubmit(event) {
-    this.saveNewStatus(this.state.newStatus)
-    this.setState({
-      newStatus: ""
-    })
-  }
-
-  saveNewStatus(statusText) {
-    let statuses = this.state.statuses
- 
-    let status = {
-      id: this.state.statusIndex++,
-      text: statusText.trim(),
-      created_at: Date.now()
-    }
- 
-    statuses.unshift(status)
-    const options = { encrypt: false }
-    putFile('statuses.json', JSON.stringify(statuses), options)
-      .then(() => {
-        this.setState({
-          statuses: statuses
-        })
-      })
-  }
   isLocal() {
     return this.props.match.params.username ? false : true
   }
-
-  
   fetchData() {
     this.setState({ isLoading: true })
     if (this.isLocal()) {

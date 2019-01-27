@@ -36,31 +36,31 @@ export default class AllBlogs extends Component {
       <div className="container">
       
         <div className="row">
-        
           <div className="col-md-offset-3 col-md-6" id="">            
             <div className="col-md-12 statuses">
             {this.state.isLoading && <span>Loading...</span>}
             {this.state.blogIds.map((blog) => (
                 <div className="status" key={blog.id}>
-                 <a href="#" onClick={()=>this.setState({ newBlogClicked : false} )}>
-                 {blog.title}
-                        </a>
+                 <a href="#" onClick={()=>this.fetchNews(blog.id)}>
+                    {blog.title}
+                 </a>
                 </div>
                 )
             )}
             </div>
           </div>
-          <div className="col-md-offset-3 col-md-7" id="">            
-            <div className="col-md-12 statuses">
-            {this.state.isLoading && <span>Loading...</span>}
-            {this.state.blogIds.map((blog) => (
-                <div className="status" key={blog.id}>
-                 <a href="#" onClick={()=>this.setState({ newBlogClicked : false} )}>
-                 {blog.title}
-                        </a>
+          <div className="col-md-offset-3 col-md-7" id="">       
+          <div className="col-md-12 statuses">
+            {this.state.isLoading && <span className="openSpace">Loading...</span>}
+                <div className="openSpace">
+                 {this.state.title}
                 </div>
-                )
-            )}
+            </div>     
+            <div className="col-md-12 statuses">
+            {this.state.isLoading && <span className="openSpace">Loading...</span>}
+                <div className="openSpace">
+                 {this.state.news}
+                </div>
             </div>
           </div>
         </div>
@@ -69,33 +69,26 @@ export default class AllBlogs extends Component {
     }
 
   componentDidMount() {
-    console.log('state in constructotr', this.state );
-    this.fetchBlogs()
+    this.fetchBlogs()    
   }
 
   isLocal() {
-    console.log('state in constructotr', this.state );
     return this.props.match.params.username ? false : true
   }
 
   fetchBlogs(){
-    
-    console.log('state in constructotr', this.state );
-
     this.setState({ isLoading: true })
     if (this.isLocal()) {
       const options = { decrypt: false }
-      /** const options = { username:'newschain3.id.blockstack',encrypt: false}*/
-
       getFile('blogIds.json', options)
         .then((file) => {
-            console.log(file)
           var blogIds = JSON.parse(file || '[]')
           this.setState({
             person: new Person(loadUserData().profile),
             username: loadUserData().username,
             blogId: blogIds.length,
             blogIds: blogIds,
+            news: this.fetchNews(blogIds[0].id)
           })
         })
         .finally(() => {
@@ -133,7 +126,59 @@ export default class AllBlogs extends Component {
     } 
   }
 
-  
+
+  fetchNews(blogId){
+    this.setState({ isLoading: true })
+    if (this.isLocal()) {
+      const options = { decrypt: false }
+      getFile(blogId+'.json', options)
+        .then((file) => {
+          var newsItem = JSON.parse(file || '[]')
+          this.setState({
+            person: new Person(loadUserData().profile),
+            username: loadUserData().username,
+            blogId: newsItem.blogId,
+            created_at: newsItem.created_at,
+            title:newsItem.title,
+            news: newsItem.news,
+          })
+        })
+        .finally(() => {
+          this.setState({ isLoading: false })
+        })
+    } else {
+      const username = this.props.match.params.username
+ 
+      lookupProfile(username)
+        .then((profile) => {
+          this.setState({
+            person: new Person(profile),
+            username: username
+          })
+        })
+        .catch((error) => {
+          console.log('could not resolve profile')
+        })
+        const options = { username:username,encrypt: false}
+        getFile(blogId+'.json', options)
+        .then((file) => {
+            var blogIds = JSON.parse(file || '[]')
+            this.setState({
+                blogId: newsItem.blogId,
+                created_at: newsItem.created_at,
+                title:newsItem.title,
+                news: newsItem.news,
+            })
+          })
+          .catch((error) => {
+            console.log('could not fetch blogIds')
+          })
+          .finally(() => {
+            this.setState({ isLoading: false })
+          })
+    } 
+  }
+
 
   fetchData() {
     console.log('state in fetchData AllBlogs', this.state );

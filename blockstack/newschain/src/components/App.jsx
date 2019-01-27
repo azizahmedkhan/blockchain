@@ -19,8 +19,6 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {newBlogClicked:false};
-    console.log('state in constructotr', this.state );
-
   }
 
   handleSignIn(e) {
@@ -47,15 +45,17 @@ export default class App extends Component {
                 render={
                   routeProps => (
                     <div>
+                      <div className="openSpace">
                       {this.state.newBlogClicked?
-                        <a href="#" onClick={()=>this.setState({ newBlogClicked : false} )}>
+                        <a href="#" className="openSpace" onClick={()=>this.setState({ newBlogClicked : false} )}>
                           Return
                         </a>
                         :
-                        <a href="#" onClick={()=>this.setState({ newBlogClicked : true} )}>
-                            Create New Blog
+                        <a href="#" className="openSpace" onClick={()=>this.setState({ newBlogClicked : true} )}>
+                            Create News
                         </a>
                       }
+                      </div>
                       <UserInfo handleSignOut={ this.handleSignOut } {...routeProps} />
                       {this.state.newBlogClicked? 
                         <NewBlog  {...routeProps} /> :
@@ -78,7 +78,6 @@ export default class App extends Component {
   }
 
   createNewBlog() {
-    console.log("creating new blog");
     this.setState({ newBlogClicked : true} );
   }
   

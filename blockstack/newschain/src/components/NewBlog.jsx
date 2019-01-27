@@ -33,7 +33,7 @@ export default class NewBlog extends Component {
       
       <div className="container">
         <div className="row">
-          <div className="col-md-offset-3 col-md-6">  
+          <div className="col-md-offset-3 col-md-8">  
             {this.isLocal() &&
               <div className="new-blog">
                 <div className="col-md-12">
@@ -88,13 +88,12 @@ export default class NewBlog extends Component {
     let blogIds = this.state.blogIds
  
     let blogIdItem = {
-      id: blogId++,
+      id: blogId,
       created_at: Date.now(),
       title:title,
     }
  
     blogIds.unshift(blogIdItem)
-    console.log('saveNewBlog')
     const options = { encrypt: false}
     putFile('blogIds.json', JSON.stringify(blogIds), options)
       .then(() => {
@@ -122,14 +121,10 @@ export default class NewBlog extends Component {
   }
 
   fetchBlogIds(){
-    
-    console.log('state in constructotr', this.state );
-
     this.setState({ isLoading: true })
     if (this.isLocal()) {
       const options = { decrypt: false }
       /** const options = { username:'newschain3.id.blockstack',encrypt: false}*/
-
       getFile('blogIds.json', options)
         .then((file) => {
           var blogIds = JSON.parse(file || '[]')
@@ -145,7 +140,6 @@ export default class NewBlog extends Component {
         })
     } else {
       const username = this.props.match.params.username
- 
       lookupProfile(username)
         .then((profile) => {
           this.setState({

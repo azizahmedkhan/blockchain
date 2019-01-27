@@ -30,7 +30,6 @@ export default class App extends Component {
   }
 
   handleSignOut(e) {
-    //console.log('path',path)
     e.preventDefault();
     signUserOut(window.location.origin);
   }

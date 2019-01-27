@@ -21,8 +21,10 @@ export default class AllBlogs extends Component {
         },
       },
       username: "",
-      statuses: [],
-      statusIndex: 0,
+      title: "",
+      news: "",
+      blogIds: [],
+      blogId: 0,
       isLoading: false
     };
   }
@@ -38,9 +40,24 @@ export default class AllBlogs extends Component {
           <div className="col-md-offset-3 col-md-6" id="">            
             <div className="col-md-12 statuses">
             {this.state.isLoading && <span>Loading...</span>}
-            {this.state.statuses.map((status) => (
-                <div className="status" key={status.id}>
-                  {status.text}
+            {this.state.blogIds.map((blog) => (
+                <div className="status" key={blog.id}>
+                 <a href="#" onClick={()=>this.setState({ newBlogClicked : false} )}>
+                 {blog.title}
+                        </a>
+                </div>
+                )
+            )}
+            </div>
+          </div>
+          <div className="col-md-offset-3 col-md-7" id="">            
+            <div className="col-md-12 statuses">
+            {this.state.isLoading && <span>Loading...</span>}
+            {this.state.blogIds.map((blog) => (
+                <div className="status" key={blog.id}>
+                 <a href="#" onClick={()=>this.setState({ newBlogClicked : false} )}>
+                 {blog.title}
+                        </a>
                 </div>
                 )
             )}
@@ -52,16 +69,80 @@ export default class AllBlogs extends Component {
     }
 
   componentDidMount() {
-    this.fetchData()
+    console.log('state in constructotr', this.state );
+    this.fetchBlogs()
   }
 
   isLocal() {
+    console.log('state in constructotr', this.state );
     return this.props.match.params.username ? false : true
   }
-  fetchData() {
+
+  fetchBlogs(){
+    
+    console.log('state in constructotr', this.state );
+
     this.setState({ isLoading: true })
     if (this.isLocal()) {
       const options = { decrypt: false }
+      /** const options = { username:'newschain3.id.blockstack',encrypt: false}*/
+
+      getFile('blogIds.json', options)
+        .then((file) => {
+            console.log(file)
+          var blogIds = JSON.parse(file || '[]')
+          this.setState({
+            person: new Person(loadUserData().profile),
+            username: loadUserData().username,
+            blogId: blogIds.length,
+            blogIds: blogIds,
+          })
+        })
+        .finally(() => {
+          this.setState({ isLoading: false })
+        })
+    } else {
+      const username = this.props.match.params.username
+ 
+      lookupProfile(username)
+        .then((profile) => {
+          this.setState({
+            person: new Person(profile),
+            username: username
+          })
+        })
+        .catch((error) => {
+          console.log('could not resolve profile')
+        })
+        const options = { username:username,encrypt: false}
+
+        getFile('blogIds.json', options)
+          .then((file) => {
+            var blogIds = JSON.parse(file || '[]')
+            this.setState({
+              statusIndex: blogIds.length,
+              blogIds: blogIds
+            })
+          })
+          .catch((error) => {
+            console.log('could not fetch blogIds')
+          })
+          .finally(() => {
+            this.setState({ isLoading: false })
+          })
+    } 
+  }
+
+  
+
+  fetchData() {
+    console.log('state in fetchData AllBlogs', this.state );
+
+    this.setState({ isLoading: true })
+    if (this.isLocal()) {
+      const options = { decrypt: false }
+      /** const options = { username:'newschain3.id.blockstack',encrypt: false}*/
+
       getFile('statuses.json', options)
         .then((file) => {
           var statuses = JSON.parse(file || '[]')
@@ -88,7 +169,8 @@ export default class AllBlogs extends Component {
         .catch((error) => {
           console.log('could not resolve profile')
         })
-        const options = { username: username, decrypt: false }
+        const options = { username:username,encrypt: false}
+
         getFile('statuses.json', options)
           .then((file) => {
             var statuses = JSON.parse(file || '[]')
@@ -105,4 +187,7 @@ export default class AllBlogs extends Component {
           })
     }
   }
+
+
+
 }

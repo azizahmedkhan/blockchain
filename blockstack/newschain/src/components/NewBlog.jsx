@@ -14,10 +14,11 @@ export default class NewBlog extends Component {
     super(props);
     console.log('New Blogg')
     this.state = {
-      
-      newStatus: "",
-      statuses: [],
-      statusIndex: 0,
+      username: "",
+      title: "",
+      news: "",
+      blogIds: [],
+      blogId: 0,
       isLoading: false
     };
   }
@@ -37,13 +38,13 @@ export default class NewBlog extends Component {
               <div className="new-blog">
                 <div className="col-md-12">
                   <textarea className="input-title"
-                    value={this.state.newStatus}
-                    onChange={e => this.handleNewStatusChange(e)}
+                    value={this.state.title}
+                    onChange={e => this.handleNewTitleChange(e)}
                     placeholder="title?"
                   />
                   {<textarea className="input-blog"
-                    value={this.state.newStatus}
-                    onChange={e => this.handleNewStatusChange(e)}
+                    value={this.state.news}
+                    onChange={e => this.handleNewsChange(e)}
                     placeholder="What's on your mind?"
                   />}
             </div>
@@ -57,15 +58,6 @@ export default class NewBlog extends Component {
                 </div>
               </div>
             }
-            {/** <div className="col-md-12 statuses">
-            {this.state.isLoading && <span>Loading...</span>}
-            {this.state.statuses.map((status) => (
-                <div className="status" key={status.id}>
-                  {status.text}
-                </div>
-                )
-            )}
-            </div>*/}
           </div>
         </div>
       </div> : null
@@ -75,38 +67,53 @@ export default class NewBlog extends Component {
     
   componentDidMount() {
     console.log('componentDidMount')
-    this.fetchData()
+    this.fetchBlogIds()
   }
 
-  handleNewStatusChange(event) {
-    console.log('handleNewStatusChange')
-    this.setState({newStatus: event.target.value})
+  handleNewTitleChange(event) {
+    this.setState({title: event.target.value})
+  }
+  handleNewsChange(event) {
+    this.setState({news: event.target.value})
   }
  
   handleNewStatusSubmit(event) {
-    this.saveNewStatus(this.state.newStatus)
+    this.saveNews(this.state.blogId, this.state.title, this.state.news)
     this.setState({
       newStatus: ""
     })
   }
 
-  saveNewStatus(statusText) {
-    let statuses = this.state.statuses
+  saveNews(blogId, title, news) {
+    let blogIds = this.state.blogIds
  
-    let status = {
-      id: this.state.statusIndex++,
-      text: statusText.trim(),
-      created_at: Date.now()
+    let blogIdItem = {
+      id: blogId++,
+      created_at: Date.now(),
+      title:title,
     }
  
-    statuses.unshift(status)
-    console.log('saveNewStatus')
-    const options = { encrypt: false ,username:'azizahmed.id.blockstack'}
-    //putFile()
-    putFile('statuses.json', JSON.stringify(statuses), options)
+    blogIds.unshift(blogIdItem)
+    console.log('saveNewBlog')
+    const options = { encrypt: false}
+    putFile('blogIds.json', JSON.stringify(blogIds), options)
       .then(() => {
         this.setState({
-          statuses: statuses
+          blogIds: blogIds
+        })
+      })
+
+      let blogItem = {
+        blogId: blogId,
+        created_at: Date.now(),
+        title:title,
+        news:news
+      }
+      putFile(blogId+'.json', JSON.stringify(blogItem), options)
+      .then(() => {
+        this.setState({
+          title:'',
+          news:''
         })
       })
   }
@@ -114,19 +121,23 @@ export default class NewBlog extends Component {
     return this.props.match.params.username ? false : true
   }
 
-  
-  fetchData() {
+  fetchBlogIds(){
+    
+    console.log('state in constructotr', this.state );
+
     this.setState({ isLoading: true })
     if (this.isLocal()) {
-      const options = { decrypt: false, username:'azizahmed.id.blockstack'}
-      getFile('statuses.json', options)
+      const options = { decrypt: false }
+      /** const options = { username:'newschain3.id.blockstack',encrypt: false}*/
+
+      getFile('blogIds.json', options)
         .then((file) => {
-          var statuses = JSON.parse(file || '[]')
+          var blogIds = JSON.parse(file || '[]')
           this.setState({
             person: new Person(loadUserData().profile),
             username: loadUserData().username,
-            statusIndex: statuses.length,
-            statuses: statuses,
+            blogId: blogIds.length,
+            blogIds: blogIds,
           })
         })
         .finally(() => {
@@ -145,21 +156,23 @@ export default class NewBlog extends Component {
         .catch((error) => {
           console.log('could not resolve profile')
         })
-        const options = { username: username, decrypt: false }
-        getFile('statuses.json', options)
+        const options = { username:username,encrypt: false}
+
+        getFile('blogIds.json', options)
           .then((file) => {
-            var statuses = JSON.parse(file || '[]')
+            var blogIds = JSON.parse(file || '[]')
             this.setState({
-              statusIndex: statuses.length,
-              statuses: statuses
+              statusIndex: blogIds.length,
+              blogIds: blogIds
             })
           })
           .catch((error) => {
-            console.log('could not fetch statuses')
+            console.log('could not fetch blogIds')
           })
           .finally(() => {
             this.setState({ isLoading: false })
           })
-    }
+    } 
   }
+  
 }
